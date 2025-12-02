@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>大富翁</title>
+    <title>【大富翁-100以内加减版】</title>
     
     <!-- React & Tailwind -->
     <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
@@ -18,7 +18,6 @@
             --bg-dark: #0f172a;
             --panel-bg: #1e293b;
             --tile-bg: #ffffff;
-            --accent: #3b82f6;
         }
 
         body {
@@ -35,107 +34,91 @@
             margin: 0;
         }
 
-        /* --- 布局系统 --- */
         .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
 
-        /* 桌面端/横屏 */
         @media (min-width: 1024px) {
-            .app-container { flex-direction: row; padding: 20px; gap: 20px; }
-            .board-section { flex: 2; height: 100%; border-radius: 16px; background: #111827; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-            .controls-section { flex: 1; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
+            .app-container { flex-direction: row; padding: 24px; gap: 32px; }
+            .board-section { flex: 2; height: 100%; border-radius: 24px; background: #111827; box-shadow: inset 0 0 40px rgba(0,0,0,0.6); padding: 20px; }
+            .controls-section { flex: 1; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
             .mobile-hud { display: none !important; }
             .desktop-hud { display: flex !important; }
         }
 
-        /* 移动端/竖屏 */
         @media (max-width: 1023px) {
-            .board-section { flex: 1; width: 100%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; padding-bottom: 120px; }
+            .board-section { flex: 1; width: 100%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; padding-bottom: 140px; } /* 增加底部留白给更大的HUD */
             .controls-section { display: none; }
             .mobile-hud { display: flex !important; }
             .desktop-hud { display: none !important; }
         }
 
-        /* --- 棋盘 --- */
         .board-grid {
-            display: grid;
-            gap: 3px; 
-            width: 100%;
-            max-width: min(95vw, 70vh); 
-            background: var(--panel-bg);
-            border: 4px solid var(--panel-bg);
-            border-radius: 12px;
-            position: relative;
-            transition: all 0.3s ease;
+            display: grid; gap: 4px; width: 100%;
+            max-width: min(95vw, 600px); 
+            background: var(--panel-bg); border: 4px solid var(--panel-bg); border-radius: 12px;
+            position: relative; transition: all 0.3s ease;
         }
+        @media (min-width: 1024px) { .board-grid { max-width: min(90vh, 850px); gap: 6px; border-width: 8px; border-radius: 20px; } }
 
         .tile {
-            aspect-ratio: 1/1;
-            background: var(--tile-bg);
-            color: #1e293b;
+            aspect-ratio: 1/1; background: var(--tile-bg); color: #1e293b;
             display: flex; flex-direction: column; align-items: center;
-            border-radius: 3px;
-            position: relative;
-            overflow: visible;
+            border-radius: 4px; position: relative; overflow: visible;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .tile.owned { border: 2px solid transparent; }
         
-        .street-bar { width: 100%; height: 4px; flex-shrink: 0; opacity: 0.85; border-radius: 2px 2px 0 0; }
+        .street-bar { width: 100%; height: 4px; flex-shrink: 0; opacity: 0.9; border-radius: 3px 3px 0 0; }
         .tile-idx { position: absolute; top: 1px; left: 2px; font-size: 8px; color: #94a3b8; font-weight: bold; opacity: 0.5; }
-        .level-stars { position: absolute; top: 2px; right: 2px; font-size: 8px; color: #eab308; display: flex; gap: 0; z-index: 5; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .level-stars { position: absolute; top: 2px; right: 2px; font-size: 10px; color: #eab308; display: flex; gap: 0; z-index: 5; }
 
-        /* 内容响应式 */
         .tile-content { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; }
-        .tile-icon-div { font-size: 16px; line-height: 1; margin-bottom: 2px; transition: all 0.3s; }
-        .tile-name-div { font-weight: 700; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; margin-top: 1px; }
-        .tile-price-div { background-color: #f1f5f9; border-radius: 4px; padding: 1px 4px; margin-top: 2px; font-family: monospace; color: #64748b; font-size: 9px; line-height: 1; }
-        .tile-owner-div { margin-top: 2px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: 700; font-size: 9px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); line-height: 1; max-width: 95%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tile-icon-div { font-size: 20px; line-height: 1; margin-bottom: 2px; transition: all 0.3s; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
+        .tile-name-div { font-weight: 700; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; margin-top: 1px; color: #334155; }
+        .tile-price-div { background-color: #f1f5f9; border-radius: 4px; padding: 1px 6px; margin-top: 2px; font-family: monospace; color: #64748b; font-size: 12px; font-weight: 900; line-height: 1; }
+        .tile-owner-div { margin-top: 2px; padding: 1px 4px; border-radius: 4px; color: white; font-weight: 700; font-size: 9px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); line-height: 1.2; max-width: 95%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* 路径箭头 */
+        @media (min-width: 1024px) {
+            .street-bar { height: 8px; }
+            .tile-icon-div { font-size: 36px; margin-bottom: 6px; }
+            .tile-name-div { font-size: 14px; margin-top: 2px; }
+            .tile-price-div { font-size: 16px; padding: 2px 10px; }
+            .tile-owner-div { font-size: 12px; padding: 3px 8px; }
+        }
+
         .path-arrow { position: absolute; color: rgba(148, 163, 184, 0.4); font-size: 10px; pointer-events: none; z-index: 0; }
         .arrow-right { right: -6px; top: 50%; transform: translateY(-50%); }
         .arrow-left { left: -6px; top: 50%; transform: translateY(-50%); }
         .arrow-down { bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 12px; }
         .return-start { position: absolute; bottom: 2px; width: 100%; text-align: center; font-size: 7px; color: #ef4444; font-weight: bold; background: rgba(255,255,255,0.9); pointer-events: none; z-index: 10; }
 
-        /* --- 棋子 --- */
         .token { position: absolute; z-index: 50; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
         .token-body { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px; background-size: cover; }
         .token-body.hopping { animation: jump 0.3s infinite alternate; }
         @keyframes jump { 0% { transform: translateY(0); } 100% { transform: translateY(-14px) scale(1.1); } }
+        @media (min-width: 1024px) { .token-body { width: 40px; height: 40px; border-width: 4px; font-size: 18px; } }
 
-        /* 浮动文字 */
-        .float-text { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-weight: 900; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); animation: floatUp 1.5s forwards; pointer-events: none; z-index: 100; white-space: nowrap; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -40px) scale(1.2); } }
+        .float-text { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-weight: 900; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); animation: floatUp 2s forwards; pointer-events: none; z-index: 100; white-space: nowrap; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50px) scale(1.2); } }
 
-        /* --- HUD --- */
-        .mobile-hud { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 15px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; z-index: 60; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); }
-        .desktop-hud { height: 100%; background: var(--panel-bg); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 20px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .mobile-hud { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; z-index: 60; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); }
+        .desktop-hud { height: 100%; background: var(--panel-bg); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 24px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05); }
 
-        .dice-btn { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; color: #0f172a; box-shadow: 0 4px 0 #94a3b8, 0 5px 10px rgba(0,0,0,0.2); transition: all 0.1s; cursor: pointer; }
-        .dice-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #94a3b8, inset 0 2px 5px rgba(0,0,0,0.1); }
+        .dice-btn { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: #0f172a; box-shadow: 0 6px 0 #94a3b8, 0 8px 15px rgba(0,0,0,0.2); transition: all 0.1s; cursor: pointer; }
+        .dice-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #94a3b8, inset 0 2px 5px rgba(0,0,0,0.1); }
         .dice-rolling { animation: dice-wobble 0.4s ease-in-out infinite; }
         @keyframes dice-wobble { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-15deg) scale(1.1); } 75% { transform: rotate(15deg) scale(1.1); } }
 
-        .player-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; }
-        .player-card.active { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+        .player-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+        .player-card.active { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         .player-card.bankrupt { opacity: 0.4; filter: grayscale(1); }
+
+        .pulse-text { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.95); } }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .modal-bg { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
         .modal-content { animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-        @media (min-width: 600px) {
-            .token-body { width: 30px; height: 30px; font-size: 14px; border-width: 3px; }
-            .tile-icon-div { font-size: 28px; margin-bottom: 4px; }
-            .tile-name-div { font-size: 13px; }
-            .tile-price-div { font-size: 11px; padding: 2px 6px; }
-            .tile-owner-div { font-size: 11px; padding: 2px 8px; }
-            .path-arrow { font-size: 14px; }
-            .arrow-right, .arrow-left { right: -8px; left: -8px; }
-            .arrow-down { font-size: 16px; bottom: -10px; }
-            .return-start { font-size: 10px; }
-        }
     </style>
 </head>
 <body>
@@ -144,40 +127,89 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 静态数据 (SVG图标) ---
+        // --- 音效系统 ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const playTone = (freq, type, duration, vol = 0.1) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        };
+
+        const playSound = (effect, enabled) => {
+            if (!enabled) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume(); // 双重保险
+            
+            switch(effect) {
+                case 'dice': 
+                    // 模拟骰子滚动的哒哒声
+                    for(let i=0; i<6; i++) {
+                        setTimeout(() => playTone(300 + Math.random()*200, 'square', 0.05, 0.03), i*50);
+                    }
+                    break;
+                case 'step': 
+                    playTone(400, 'sine', 0.08, 0.05); 
+                    break;
+                case 'coin': 
+                    playTone(1000, 'sine', 0.1, 0.1); 
+                    setTimeout(() => playTone(1500, 'sine', 0.2, 0.1), 100); 
+                    break;
+                case 'pay': 
+                    playTone(200, 'sawtooth', 0.2, 0.05); 
+                    setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); 
+                    break;
+                case 'upgrade': 
+                    playTone(500, 'square', 0.1, 0.05); 
+                    setTimeout(() => playTone(750, 'square', 0.1, 0.05), 100); 
+                    setTimeout(() => playTone(1000, 'square', 0.2, 0.05), 200);
+                    break;
+                case 'turn': 
+                    playTone(600, 'sine', 0.3, 0.05); 
+                    break;
+            }
+        };
+
+        // --- 图标 ---
         const ICONS = {
+            star: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>,
+            heart: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
+            crown: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11h-14zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
+            robot: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0 2.5-2.5z"/></svg>,
             car: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>,
             ship: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0 1.26.65 2.62.99 4 .99h2v-2h-2zM3.95 19H4c1.6 0 3.02-.88 4-2 .98 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08-.26.06-.54-.06-.78s-.34-.42-.6-.5L20 10.62V6c0-1.1-.9-2-2-2h-3V1H9v3H6c-1.1 0-2 .9-2 2v4.62l-1.29.42c-.26.08-.48.26-.6.5s-.15.52-.06.78L3.95 19zM6 6h12v3.97L12 8 6 9.97V6z"/></svg>,
-            star: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>,
-            crown: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11h-14zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
-            robot: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5z"/></svg>,
-            leaf: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>,
+            smile: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>,
             paw: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M14 11.5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 5 0zm3.5-3a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 5 0zm-11 0a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 5 0zm7 7.5a6 6 0 0 1-6-6 6 6 0 0 1 12 0 6 6 0 0 1-6 6z"/></svg>,
-            mask: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M2 9c0 4.97 4.03 9 9 9h2c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9zm10 4.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-6.5-2c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2 .9-2 2zm6.5 6c-2.67 0-5.06-1.28-6.5-3.25.96-.3 1.99-.48 3.06-.52.57 1.03 1.66 1.77 2.94 1.77s2.37-.74 2.94-1.77c1.07.04 2.1.22 3.06.52-1.44 1.97-3.83 3.25-6.5 3.25z"/></svg>,
-            smile: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
         };
 
         const CHARACTER_ROSTER = [
-            { id: 'huang', name: "黄小越", color: "#eab308", bgLight: "#fef9c3", icon: ICONS.star, desc: "幸运之星" },
-            { id: 'king', name: "多金王", color: "#f59e0b", bgLight: "#fef3c7", icon: ICONS.crown, desc: "富可敌国" },
-            { id: 'tech', name: "科技侠", color: "#3b82f6", bgLight: "#dbeafe", icon: ICONS.robot, desc: "智慧超群" },
-            { id: 'racer', name: "极速客", color: "#ef4444", bgLight: "#fee2e2", icon: ICONS.car, desc: "风驰电掣" },
-            { id: 'druid', name: "自然灵", color: "#10b981", bgLight: "#d1fae5", icon: ICONS.leaf, desc: "生生不息" },
-            { id: 'pinky', name: "粉红豹", color: "#ec4899", bgLight: "#fce7f3", icon: ICONS.paw, desc: "优雅敏捷" },
-            { id: 'sailor', name: "航海家", color: "#06b6d4", bgLight: "#cffafe", icon: ICONS.ship, desc: "征服海洋" },
-            { id: 'ninja', name: "暗夜行", color: "#6366f1", bgLight: "#e0e7ff", icon: ICONS.mask, desc: "神出鬼没" },
+            { id: 'huang', name: "黄小越", color: "#eab308", bgLight: "#fef9c3", icon: ICONS.star, desc: "口算小天才" },
+            { id: 'pinky', name: "粉红豹", color: "#ec4899", bgLight: "#fce7f3", icon: ICONS.heart, desc: "可爱的朋友" },
+            { id: 'tech', name: "科技侠", color: "#3b82f6", bgLight: "#dbeafe", icon: ICONS.robot, desc: "聪明机器人" },
+            { id: 'king', name: "多金王", color: "#f59e0b", bgLight: "#fef3c7", icon: ICONS.crown, desc: "大富翁" },
+            { id: 'racer', name: "极速客", color: "#ef4444", bgLight: "#fee2e2", icon: ICONS.car, desc: "跑得快" },
+            { id: 'sailor', name: "航海家", color: "#06b6d4", bgLight: "#cffafe", icon: ICONS.ship, desc: "爱冒险" },
+            { id: 'smile', name: "乐天派", color: "#8b5cf6", bgLight: "#ede9fe", icon: ICONS.smile, desc: "天天开心" },
+            { id: 'cat', name: "喵星人", color: "#f97316", bgLight: "#ffedd5", icon: ICONS.paw, desc: "喵喵喵" },
         ];
 
         const BUSINESS_DATA = [
-            {n:"烧烤摊",i:"🍢"}, {n:"报刊亭",i:"📰"}, {n:"奶茶店",i:"🧋"}, {n:"便利店",i:"🏪"}, {n:"水果摊",i:"🍎"}, 
-            {n:"咖啡馆",i:"☕"}, {n:"健身房",i:"🏋️"}, {n:"网吧",i:"🎮"}, {n:"火锅店",i:"🥘"}, {n:"书店",i:"📚"},
-            {n:"电影院",i:"🎬"}, {n:"酒店",i:"🏨"}, {n:"游乐园",i:"🎡"}, {n:"银行",i:"🏦"}, {n:"科技园",i:"🧬"}
+            {n:"糖果店",i:"🍬"}, {n:"玩具店",i:"🧸"}, {n:"汉堡店",i:"🍔"}, {n:"文具店",i:"✏️"}, {n:"水果摊",i:"🍎"}, 
+            {n:"游乐场",i:"🎡"}, {n:"冰淇淋",i:"🍦"}, {n:"书店",i:"📚"}, {n:"电影院",i:"🎬"}, {n:"科技馆",i:"🚀"},
+            {n:"蛋糕房",i:"🍰"}, {n:"动物园",i:"🦁"}, {n:"水族馆",i:"🐬"}, {n:"披萨店",i:"🍕"}, {n:"乐高店",i:"🧱"}
         ];
 
         function App() {
             const [stage, setStage] = useState('menu');
-            const [settings, setSettings] = useState({ playerCount: 2, mapSize: 'normal' });
-            const [selectedChars, setSelectedChars] = useState({});
+            const [settings, setSettings] = useState({ playerCount: 2, mapSize: 'normal', sound: true });
+            const [selectedChars, setSelectedChars] = useState({0: 'huang'}); 
             
             const [tiles, setTiles] = useState([]);
             const [gridConfig, setGridConfig] = useState({ cols: 6, rows: 7 });
@@ -188,9 +220,11 @@
             const [isRolling, setIsRolling] = useState(false);
             const [movingPlayerId, setMovingPlayerId] = useState(null);
             const [modal, setModal] = useState(null);
-            const [logs, setLogs] = useState(["欢迎来到大富翁！"]);
+            const [logs, setLogs] = useState(["开始挑战吧！"]);
             const [floatTexts, setFloatTexts] = useState([]);
             const [assetTab, setAssetTab] = useState('stats');
+
+            const play = (eff) => playSound(eff, settings.sound);
 
             const handleCharSelect = (idx, charId) => {
                 if (Object.values(selectedChars).includes(charId) && selectedChars[idx] !== charId) return;
@@ -203,6 +237,7 @@
             };
 
             const startGame = () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
                 const cols = 6;
                 let rows = 7; 
                 if(settings.mapSize === 'large') rows = 9;
@@ -215,17 +250,19 @@
                 setTiles(newTiles);
                 
                 const initP = Array.from({ length: settings.playerCount }, (_, i) => {
-                    const charData = CHARACTER_ROSTER.find(c => c.id === selectedChars[i]);
+                    const charData = CHARACTER_ROSTER.find(c => c.id === (selectedChars[i] || CHARACTER_ROSTER[i].id));
                     return {
                         id: i, name: charData.name, color: charData.color, bgLight: charData.bgLight, icon: charData.icon,
-                        money: 1500, pos: 0, inJail: false, isBankrupt: false,
+                        money: 50, // 初始 $50，方便凑100
+                        pos: 0, inJail: false, isBankrupt: false,
                         stats: { income: { rent: 0, salary: 0, other: 0 }, expense: { buy: 0, rent: 0, tax: 0 } }
                     };
                 });
                 setPlayers(initP);
                 setTurn(0);
-                setLogs([`地图生成完毕 (${total}格)! 初始资金 $1500`]);
+                setLogs([`每人 $50，目标：赚到 $100！`]);
                 setStage('playing');
+                play('turn');
             };
 
             const createSnakeMap = (total) => {
@@ -235,32 +272,43 @@
                 for (let i = 0; i < total; i++) {
                     if (i === 0) { arr.push({ id: i, type: 'start', name: '起点', icon: '🏁', color: 'slate' }); continue; }
                     const rand = Math.random();
+                    
+                    // 数学优化版数值：地价 10-20，租金 2-8
+                    let tilePrice = 10 + Math.floor((i / total) * 10); // 10, 12, 15... 20
+                    // 偶数化，方便减半
+                    if (tilePrice % 2 !== 0) tilePrice += 1;
+                    
+                    let rentPrice = Math.max(2, Math.floor(tilePrice * 0.2)); 
+                    if (rentPrice % 2 !== 0) rentPrice += 1; // 偶数化
+
                     if (i % 6 === 0) {
-                        if (rand > 0.7) arr.push({ id: i, type: 'chance', name: '机会', icon: '❓', color: 'amber' });
-                        else if (rand > 0.4) arr.push({ id: i, type: 'tax', name: '国税局', icon: '💸', color: 'stone', amount: 200 });
-                        else arr.push({ id: i, type: 'hospital', name: '医院', icon: '🏥', color: 'red', amount: 100 });
+                        if (rand > 0.7) arr.push({ id: i, type: 'chance', name: '机会', icon: '❓', color: 'amber' }); // +/- 5 or 10
+                        else if (rand > 0.4) arr.push({ id: i, type: 'tax', name: '税局', icon: '💸', color: 'stone', amount: 5 }); // 整数 5
+                        else arr.push({ id: i, type: 'hospital', name: '医院', icon: '🏥', color: 'red', amount: 5 }); // 整数 5
                         continue;
                     }
                     if (i === Math.floor(total * 0.25)) { arr.push({ id: i, type: 'jail', name: '探监', icon: '⛓️', color: 'slate' }); continue; }
-                    if (i === Math.floor(total * 0.5)) { arr.push({ id: i, type: 'parking', name: '休息区', icon: '💤', color: 'slate' }); continue; }
+                    if (i === Math.floor(total * 0.5)) { arr.push({ id: i, type: 'parking', name: '休息', icon: '💤', color: 'slate' }); continue; }
                     if (i === Math.floor(total * 0.75)) { arr.push({ id: i, type: 'casino', name: '赌场', icon: '🎰', color: 'violet' }); continue; }
                     if (i === total - 3) { arr.push({ id: i, type: 'gotojail', name: '被捕', icon: '👮', color: 'slate' }); continue; }
+                    
                     const biz = BUSINESS_DATA[i % BUSINESS_DATA.length];
-                    let price = 60 + (i * 5);
-                    price = Math.ceil(price / 10) * 10;
                     if (i > 0 && i % 4 === 0) colorIdx = (colorIdx + 1) % colors.length;
-                    arr.push({ id: i, type: 'prop', name: biz.n, icon: biz.i, color: colors[colorIdx % colors.length], price: price, rent: Math.floor(price * 0.15), level: 0, owner: null });
+                    arr.push({ id: i, type: 'prop', name: biz.n, icon: biz.i, color: colors[colorIdx % colors.length], price: tilePrice, rent: rentPrice, level: 0, owner: null });
                 }
                 return arr;
             };
 
             const rollDice = async () => {
                 if (isRolling || movingPlayerId !== null || modal) return;
-                setIsRolling(true);
+                
+                // 确保音频上下文已激活
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
+                
+                setIsRolling(true); play('dice');
                 for(let i=0; i<8; i++) { await new Promise(r => setTimeout(r, 60)); setDice(Math.floor(Math.random()*6)+1); }
                 const val = Math.floor(Math.random()*6)+1;
-                setDice(val);
-                setIsRolling(false);
+                setDice(val); setIsRolling(false);
                 handleMove(turn, val);
             };
 
@@ -268,17 +316,18 @@
                 setMovingPlayerId(pId);
                 const player = players[pId];
                 if (player.inJail) {
-                    if (steps >= 4) { setLogs(p=>["越狱成功！", ...p]); updatePlayer(pId, { inJail: false }); } 
-                    else { setLogs(p=>["越狱失败...", ...p]); setTimeout(() => { setMovingPlayerId(null); nextTurn(); }, 1000); return; }
+                    if (steps >= 4) { setLogs(p=>["越狱成功！", ...p]); updatePlayer(pId, { inJail: false }); play('coin'); } 
+                    else { setLogs(p=>["越狱失败...", ...p]); play('pay'); setTimeout(() => { setMovingPlayerId(null); nextTurn(); }, 1000); return; }
                 }
                 let curPos = player.pos;
                 for (let i = 0; i < steps; i++) {
                     curPos = (curPos + 1) % tiles.length;
                     updatePlayer(pId, { pos: curPos });
+                    play('step');
                     await new Promise(r => setTimeout(r, 200));
                 }
                 if (player.pos + steps >= tiles.length && !player.inJail) {
-                    setLogs(p=>["经过起点 +$200", ...p]); transfer(null, pId, 200, 'salary');
+                    setLogs(p=>["经过起点 +$10", ...p]); transfer(null, pId, 10, 'salary'); // 工资 +10
                 }
                 setMovingPlayerId(null);
                 setTimeout(() => resolveTile(curPos, pId), 300);
@@ -289,24 +338,25 @@
                 const player = players[pId];
                 if (tile.type === 'prop') {
                     if (tile.owner === null) {
-                        if (player.money >= tile.price) setModal({ type: 'buy', tile });
-                        else { setLogs(p=>["资金不足", ...p]); nextTurn(); }
+                        if (player.money >= tile.price) { setModal({ type: 'buy', tile }); play('turn'); }
+                        else { setLogs(p=>["钱不够买", ...p]); nextTurn(); }
                     } else if (tile.owner === pId) {
-                        if (tile.level < 2) setModal({ type: 'upgrade', tile, cost: Math.floor(tile.price * 0.6) });
+                        if (tile.level < 2) { setModal({ type: 'upgrade', tile, cost: Math.ceil(tile.price/2) }); play('turn'); }
                         else { setLogs(p=>["已满级", ...p]); nextTurn(); }
                     } else {
                         const owner = players[tile.owner];
                         if (!owner.isBankrupt) {
-                            const multiplier = tile.level === 0 ? 1 : (tile.level === 1 ? 2 : 4);
+                            const multiplier = tile.level === 0 ? 1 : (tile.level === 1 ? 2 : 3);
                             setModal({ type: 'rent', tile, owner, amount: tile.rent * multiplier });
+                            play('pay');
                         } else { setLogs(p=>["免租金", ...p]); nextTurn(); }
                     }
                 }
-                else if (tile.type === 'chance') { setModal({ type: 'event', ...(Math.random()>0.5 ? {t:"中奖 +$200",v:200,g:true} : {t:"丢钱 -$100",v:-100,g:false}) }); }
+                else if (tile.type === 'chance') { setModal({ type: 'event', ...(Math.random()>0.5 ? {t:"捡到钱 +$5",v:5,g:true} : {t:"丢了钱 -$5",v:-5,g:false}) }); }
                 else if (tile.type === 'casino') setModal({ type: 'casino' });
-                else if (tile.type === 'hospital') { setLogs(p=>["支付医疗费 $100", ...p]); transfer(pId, null, 100, 'tax'); setTimeout(nextTurn, 800); }
-                else if (tile.type === 'tax') { setLogs(p=>[`纳税 $${tile.amount}`, ...p]); transfer(pId, null, tile.amount, 'tax'); setTimeout(nextTurn, 800); }
-                else if (tile.type === 'gotojail') { setLogs(p=>["被带走！", ...p]); updatePlayer(pId, { pos: tiles.findIndex(t => t.type === 'jail') || 0, inJail: true }); setTimeout(nextTurn, 1000); }
+                else if (tile.type === 'hospital') { setLogs(p=>["看医生 -$5", ...p]); transfer(pId, null, 5, 'tax'); setTimeout(nextTurn, 800); }
+                else if (tile.type === 'tax') { setLogs(p=>[`交税 $${tile.amount}`, ...p]); transfer(pId, null, tile.amount, 'tax'); setTimeout(nextTurn, 800); }
+                else if (tile.type === 'gotojail') { setLogs(p=>["暂停一回合！", ...p]); updatePlayer(pId, { pos: tiles.findIndex(t => t.type === 'jail') || 0, inJail: true }); play('pay'); setTimeout(nextTurn, 1000); }
                 else nextTurn();
             };
 
@@ -321,8 +371,9 @@
             };
 
             const transfer = (from, to, val, reason) => {
-                if (from !== null) showFloatText(from, `-$${val}`, 'text-red-500');
-                if (to !== null) showFloatText(to, `+$${val}`, 'text-green-500');
+                if (from !== null) { showFloatText(from, `-${val}`, 'text-red-500'); play('pay'); }
+                if (to !== null) { showFloatText(to, `+${val}`, 'text-green-500'); play('coin'); }
+                
                 setPlayers(prev => prev.map(p => {
                     let newP = { ...p };
                     if (from !== null && p.id === from) {
@@ -331,9 +382,9 @@
                             let recovered = 0, sold = [];
                             for (let asset of myAssets) {
                                 if (newP.money + recovered >= val) break;
-                                const sell = Math.floor(asset.price * 0.5);
+                                const sell = Math.floor(asset.price / 2); // 半价卖
                                 recovered += sell; sold.push(asset.id);
-                                setLogs(prev => [`💸 变卖 ${asset.name}`, ...prev]);
+                                setLogs(prev => [`💸 卖掉${asset.name} (+$${sell})`, ...prev]);
                             }
                             if (sold.length > 0) { setTiles(ts => ts.map(t => sold.includes(t.id) ? { ...t, owner: null, level: 0 } : t)); newP.money += recovered; }
                         }
@@ -367,16 +418,17 @@
                     let next = (turn + 1) % nextP.length;
                     while (nextP[next].isBankrupt) next = (next + 1) % nextP.length;
                     setTurn(next);
+                    play('turn'); // 提示下一位玩家
                     return nextP;
                 });
             };
 
             const actions = {
-                buy: () => { transfer(turn, null, modal.tile.price, 'buy'); updateTile(modal.tile.id, { owner: turn, level: 0 }); setLogs(p=>[`收购 ${modal.tile.name}`, ...p]); setModal(null); nextTurn(); },
-                upgrade: () => { transfer(turn, null, modal.cost, 'buy'); updateTile(modal.tile.id, { level: modal.tile.level + 1 }); setLogs(p=>[`升级 ${modal.tile.name}`, ...p]); setModal(null); nextTurn(); },
+                buy: () => { transfer(turn, null, modal.tile.price, 'buy'); updateTile(modal.tile.id, { owner: turn, level: 0 }); setLogs(p=>[`买下 ${modal.tile.name}`, ...p]); setModal(null); play('upgrade'); nextTurn(); },
+                upgrade: () => { transfer(turn, null, modal.cost, 'buy'); updateTile(modal.tile.id, { level: modal.tile.level + 1 }); setLogs(p=>[`升级 ${modal.tile.name}`, ...p]); setModal(null); play('upgrade'); nextTurn(); },
                 rent: () => { transfer(turn, modal.owner.id, modal.amount, 'rent'); setLogs(p=>[`付租金 $${modal.amount}`, ...p]); setModal(null); nextTurn(); },
                 event: () => { if (modal.v > 0) transfer(null, turn, modal.v, 'other'); else transfer(turn, null, Math.abs(modal.v), 'tax'); setModal(null); nextTurn(); },
-                casino: () => { setModal(null); setTimeout(() => { const win = Math.random() > 0.5; const amount = 300; if (win) { transfer(null, turn, amount, 'other'); setModal({ type: 'alert', title: "🎰 大获全胜！", msg: `赢得了 $${amount}`, color: 'text-green-500' }); } else { transfer(turn, null, amount, 'tax'); setModal({ type: 'alert', title: "🎰 遗憾...", msg: `输掉了 $${amount}`, color: 'text-red-500' }); } }, 500); },
+                casino: () => { setModal(null); setTimeout(() => { const win = Math.random() > 0.5; const amount = 5; if (win) { transfer(null, turn, amount, 'other'); setModal({ type: 'alert', title: "🎰 赢了！", msg: `获得 $${amount}`, color: 'text-green-500' }); } else { transfer(turn, null, amount, 'tax'); setModal({ type: 'alert', title: "🎰 输了...", msg: `失去 $${amount}`, color: 'text-red-500' }); } }, 500); },
                 closeAlert: () => { setModal(null); nextTurn(); }
             };
 
@@ -398,22 +450,27 @@
                 return null;
             };
 
-            // --- 渲染 ---
+            // --- UI 渲染 ---
             const Controls = () => (
                 <>
-                    <div className="bg-slate-800/50 rounded-lg p-3 flex-1 overflow-hidden flex flex-col">
-                        <h3 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">最新动态</h3>
-                        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1">
+                    <div className="bg-slate-800/50 rounded-xl p-4 flex-1 overflow-hidden flex flex-col border border-slate-700">
+                        <h3 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider flex justify-between">
+                            <span>消息</span>
+                            <span className="cursor-pointer hover:text-white" onClick={()=>setSettings(s=>({...s, sound: !s.sound}))}>{settings.sound ? '🔊' : '🔇'}</span>
+                        </h3>
+                        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-2">
                             {logs.map((l, i) => <div key={i} className={`text-xs ${i===0?'text-white font-bold':'text-slate-400'}`}>{l}</div>)}
                         </div>
                     </div>
-                    <div className="flex items-center justify-center gap-4 py-4">
+                    {/* 明确的提示谁投骰子 */}
+                    <div className="text-center font-bold text-lg text-yellow-400 pulse-text">👇 轮到 {currentPlayer.name} 👇</div>
+                    <div className="flex items-center justify-center gap-4 pb-4">
                         <button onClick={rollDice} disabled={isRolling || modal} className={`dice-btn w-24 h-24 text-4xl shadow-xl ${isRolling ? 'dice-rolling' : ''}`}>{dice}</button>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
                         {players.map(p => (
                             <div key={p.id} onClick={() => {setModal({ type: 'asset', p }); setAssetTab('stats');}} className={`player-card ${turn === p.id ? 'active' : ''} ${p.isBankrupt ? 'bankrupt' : ''}`}>
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{backgroundColor: p.color}}><div style={{width:'16px', height:'16px'}}>{p.icon}</div></div>
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{backgroundColor: p.color}}><div style={{width:'20px', height:'20px'}}>{p.icon}</div></div>
                                 <div className="flex-1 min-w-0"><div className="text-xs font-bold text-slate-300 flex justify-between"><span>{p.name}</span>{p.inJail && <span className="text-red-500">狱</span>}</div><div className="text-sm font-mono font-bold text-green-400">${p.money}</div></div>
                             </div>
                         ))}
@@ -425,20 +482,20 @@
                 <div className="flex h-full items-center justify-center bg-slate-900 p-6 relative overflow-hidden">
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                     <div className="w-full max-w-sm bg-slate-800/90 backdrop-blur p-8 rounded-3xl border border-slate-700 shadow-2xl text-center relative z-10">
-                        <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2">大富翁</h1>
-                        <p className="text-slate-400 text-sm mb-8 font-bold tracking-widest">商业帝国 · 策略版</p>
+                        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2">【大富翁-100以内加减版】</h1>
+                        <p className="text-slate-400 text-sm mb-8 font-bold tracking-widest">专为黄小越定制</p>
                         <div className="space-y-6">
-                            <div className="text-left"><label className="text-xs text-slate-500 font-bold mb-2 block">玩家人数</label><div className="flex gap-2">{[2,3,4].map(n => <button key={n} onClick={()=>setSettings({...settings, playerCount:n})} className={`flex-1 py-3 rounded-xl font-bold transition-all ${settings.playerCount===n?'bg-blue-600 text-white shadow-lg':'bg-slate-700 text-slate-400'}`}>{n}人</button>)}</div></div>
+                            <div className="text-left"><label className="text-xs text-slate-500 font-bold mb-2 block">几个小朋友玩？</label><div className="flex gap-2">{[2,3,4].map(n => <button key={n} onClick={()=>setSettings({...settings, playerCount:n})} className={`flex-1 py-3 rounded-xl font-bold transition-all ${settings.playerCount===n?'bg-blue-600 text-white shadow-lg':'bg-slate-700 text-slate-400'}`}>{n}人</button>)}</div></div>
                             <div className="text-left"><label className="text-xs text-slate-500 font-bold mb-2 block">地图大小</label><div className="grid grid-cols-1 gap-2"><button onClick={()=>setSettings({...settings, mapSize:'normal'})} className={`p-3 rounded-xl border text-left transition-all ${settings.mapSize==='normal'?'border-blue-500 bg-blue-500/10':'border-slate-600 bg-slate-700'}`}><div className="font-bold text-white text-sm">标准 (42格)</div></button><button onClick={()=>setSettings({...settings, mapSize:'large'})} className={`p-3 rounded-xl border text-left transition-all ${settings.mapSize==='large'?'border-purple-500 bg-purple-500/10':'border-slate-600 bg-slate-700'}`}><div className="font-bold text-white text-sm">加长 (54格)</div></button></div></div>
                         </div>
-                        <button onClick={()=>setStage('char_select')} className="w-full mt-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-bold text-white shadow-xl hover:scale-105 transition-transform">下一步：选择角色</button>
+                        <button onClick={()=>setStage('char_select')} className="w-full mt-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-bold text-white shadow-xl hover:scale-105 transition-transform">下一步</button>
                     </div>
                 </div>
             );
 
             if (stage === 'char_select') return (
                 <div className="flex h-full flex-col bg-slate-900 p-6 overflow-hidden">
-                    <h2 className="text-2xl font-bold text-white mb-6 text-center">选择角色形象</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6 text-center">选择角色</h2>
                     <div className="flex-1 overflow-y-auto no-scrollbar">
                         <div className="grid grid-cols-2 gap-4">
                             {Array.from({length: settings.playerCount}).map((_, idx) => (
@@ -448,18 +505,10 @@
                                         {CHARACTER_ROSTER.map(char => {
                                             const isSelected = selectedChars[idx] === char.id;
                                             const isTaken = Object.values(selectedChars).includes(char.id) && !isSelected;
-                                            return (
-                                                <button key={char.id} onClick={() => handleCharSelect(idx, char.id)} disabled={isTaken}
-                                                    className={`aspect-square rounded-lg flex items-center justify-center transition-all ${isSelected ? 'ring-2 ring-white scale-110 z-10' : ''} ${isTaken ? 'opacity-20 grayscale' : 'hover:bg-slate-700'}`}
-                                                    style={{backgroundColor: isTaken ? 'transparent' : char.color}}
-                                                    title={char.name}
-                                                >
-                                                    <div style={{width:'20px', height:'20px', color:'white'}}>{char.icon}</div>
-                                                </button>
-                                            );
+                                            return <button key={char.id} onClick={() => handleCharSelect(idx, char.id)} disabled={isTaken} className={`aspect-square rounded-lg flex items-center justify-center transition-all ${isSelected ? 'ring-2 ring-white scale-110 z-10' : ''} ${isTaken ? 'opacity-20 grayscale' : 'hover:bg-slate-700'}`} style={{backgroundColor: isTaken ? 'transparent' : char.color}}><div style={{width:'20px', height:'20px', color:'white'}}>{char.icon}</div></button>;
                                         })}
                                     </div>
-                                    <div className="mt-3 text-center h-5 text-sm font-bold text-white">{selectedChars[idx] ? CHARACTER_ROSTER.find(c=>c.id===selectedChars[idx]).name : <span className="text-slate-500">请选择...</span>}</div>
+                                    <div className="mt-3 text-center h-5 text-sm font-bold text-white">{selectedChars[idx] ? CHARACTER_ROSTER.find(c=>c.id===selectedChars[idx]).name : <span className="text-slate-500">?</span>}</div>
                                 </div>
                             ))}
                         </div>
@@ -468,14 +517,7 @@
                 </div>
             );
 
-            if (stage === 'gameover') {
-                const winner = players.find(p=>!p.isBankrupt) || players[0];
-                return (
-                    <div className="flex h-full items-center justify-center bg-slate-900 text-white relative">
-                        <div className="text-center z-10"><div className="text-8xl mb-4 animate-bounce">🏆</div><h2 className="text-2xl font-bold mb-2 text-slate-400">商业大亨诞生</h2><div className="text-6xl font-black mb-12" style={{color: winner.color}}>{winner.name}</div><button onClick={()=>window.location.reload()} className="px-10 py-4 bg-slate-800 border border-slate-600 rounded-full font-bold hover:bg-slate-700 transition-colors">返回菜单</button></div>
-                    </div>
-                );
-            }
+            if (stage === 'gameover') return (<div className="flex h-full items-center justify-center bg-slate-900 text-white relative"><div className="text-center z-10"><div className="text-8xl mb-4 animate-bounce">🏆</div><h2 className="text-2xl font-bold mb-2 text-slate-400">大赢家</h2><div className="text-6xl font-black mb-12" style={{color: players.find(p=>!p.isBankrupt).color}}>{players.find(p=>!p.isBankrupt).name}</div><button onClick={()=>window.location.reload()} className="px-10 py-4 bg-slate-800 border border-slate-600 rounded-full font-bold hover:bg-slate-700 transition-colors">再玩一次</button></div></div>);
 
             const currentPlayer = players[turn];
 
@@ -532,8 +574,11 @@
                     </div>
 
                     <div className="mobile-hud md:hidden">
+                        {/* 移动端提示 */}
+                        <div className="text-center font-bold text-lg text-yellow-400 pulse-text mb-2">👇 轮到 {currentPlayer.name} 👇</div>
+                        
                         <div className="flex justify-between items-end">
-                            <div className="flex-1 mr-4 overflow-hidden"><div className="text-xs text-slate-400 mb-1">日志</div><div className="text-sm text-yellow-400 font-bold truncate">{logs[0]}</div></div>
+                            <div className="flex-1 mr-4 overflow-hidden" onClick={()=>setSettings(s=>({...s, sound: !s.sound}))}><div className="text-xs text-slate-400 mb-1">消息 {settings.sound?'🔊':'🔇'}</div><div className="text-sm text-yellow-400 font-bold truncate">{logs[0]}</div></div>
                             <button onClick={rollDice} disabled={isRolling || modal} className={`dice-btn w-16 h-16 shrink-0 ${isRolling ? 'dice-rolling' : ''}`}>{dice}</button>
                         </div>
                         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-slate-700">
@@ -555,18 +600,18 @@
                                         <>
                                             <div className="text-5xl mb-3">{modal.tile.icon}</div>
                                             <h3 className="text-2xl font-black mb-1">{modal.tile.name}</h3>
-                                            <p className="text-slate-500 mb-6 font-mono text-lg">价格 ${modal.tile.price}</p>
+                                            <p className="text-slate-500 mb-6 font-mono text-lg font-bold">价格 ${modal.tile.price}</p>
                                             <div className="flex gap-3">
-                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-600">放弃</button>
-                                                <button onClick={actions.buy} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200">购买</button>
+                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-600">不买</button>
+                                                <button onClick={actions.buy} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200">买下来</button>
                                             </div>
                                         </>
                                     )}
                                     {modal.type === 'rent' && (
                                         <>
                                             <div className="text-5xl mb-2">💸</div>
-                                            <h3 className="text-xl font-bold mb-1">支付租金</h3>
-                                            <p className="text-slate-500 mb-6">房东: <span className="font-bold" style={{color:modal.owner.color}}>{modal.owner.name}</span></p>
+                                            <h3 className="text-xl font-bold mb-1">付房租</h3>
+                                            <p className="text-slate-500 mb-6">这是 <span className="font-bold" style={{color:modal.owner.color}}>{modal.owner.name}</span> 的地盘</p>
                                             <div className="text-4xl font-black text-red-500 mb-8">-${modal.amount}</div>
                                             <button onClick={actions.rent} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold">支付</button>
                                         </>
@@ -581,10 +626,10 @@
                                     {modal.type === 'upgrade' && (
                                         <>
                                             <div className="text-5xl mb-3">🏗️</div>
-                                            <h3 className="text-xl font-bold mb-2">产业升级</h3>
+                                            <h3 className="text-xl font-bold mb-2">升级房子</h3>
                                             <p className="text-green-600 font-bold text-xl mb-6">花费 ${modal.cost}</p>
                                             <div className="flex gap-3">
-                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-500">跳过</button>
+                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-500">不升</button>
                                                 <button onClick={actions.upgrade} className="flex-1 py-3 bg-yellow-500 text-white rounded-xl font-bold shadow">升级</button>
                                             </div>
                                         </>
@@ -592,11 +637,11 @@
                                     {modal.type === 'casino' && (
                                         <>
                                             <div className="text-5xl mb-3">🎰</div>
-                                            <h3 className="text-2xl font-bold mb-2">皇家赌场</h3>
-                                            <p className="text-slate-500 mb-6">下注 $300，赢了翻倍！</p>
+                                            <h3 className="text-2xl font-bold mb-2">猜大小</h3>
+                                            <p className="text-slate-500 mb-6">只要 $3，赢了赚翻！</p>
                                             <div className="flex gap-3">
-                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">路过</button>
-                                                <button onClick={actions.casino} className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow">下注</button>
+                                                <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">不玩</button>
+                                                <button onClick={actions.casino} className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow">玩一把</button>
                                             </div>
                                         </>
                                     )}
@@ -609,54 +654,47 @@
                                     )}
                                 </div>
                             )}
+                            
                             {modal.type === 'asset' && (
                                 <div className="bg-white w-full max-w-md rounded-2xl p-5 text-slate-900 shadow-2xl flex flex-col max-h-[80vh]">
                                     <div className="flex justify-between items-center mb-4 border-b pb-2">
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{backgroundColor: modal.p.color}}><div style={{width:'16px', height:'16px'}}>{modal.p.icon}</div></div>
-                                            <div><h3 className="font-bold text-lg leading-none">{modal.p.name}</h3><span className="text-xs text-slate-400">总资产估值: ${modal.p.money + tiles.filter(t=>t.owner===modal.p.id).reduce((a,b)=>a+b.price,0)}</span></div>
+                                            <div><h3 className="font-bold text-lg leading-none">{modal.p.name}</h3><span className="text-xs text-slate-400">总资产: ${modal.p.money + tiles.filter(t=>t.owner===modal.p.id).reduce((a,b)=>a+b.price,0)}</span></div>
                                         </div>
                                         <button onClick={()=>setModal(null)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full font-bold">×</button>
                                     </div>
                                     <div className="flex bg-slate-100 rounded-xl p-1 mb-4 shrink-0">
-                                        <button onClick={()=>setAssetTab('stats')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${assetTab==='stats'?'bg-white shadow text-blue-600':'text-slate-400'}`}>📊 财务报表</button>
-                                        <button onClick={()=>setAssetTab('props')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${assetTab==='props'?'bg-white shadow text-blue-600':'text-slate-400'}`}>🏠 地产清单</button>
+                                        <button onClick={()=>setAssetTab('stats')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${assetTab==='stats'?'bg-white shadow text-blue-600':'text-slate-400'}`}>收支表</button>
+                                        <button onClick={()=>setAssetTab('props')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${assetTab==='props'?'bg-white shadow text-blue-600':'text-slate-400'}`}>房子</button>
                                     </div>
                                     {assetTab === 'stats' && (
                                         <div className="flex-1 overflow-y-auto">
                                             <div className="grid grid-cols-2 gap-3 mb-4">
                                                 <div className="bg-green-50 p-3 rounded-xl border border-green-100">
-                                                    <div className="text-xs font-bold text-green-600 uppercase mb-2 opacity-70">总收入</div>
+                                                    <div className="text-xs font-bold text-green-600 uppercase mb-2 opacity-70">赚了</div>
                                                     <div className="text-xl font-black text-green-700">${modal.p.stats.income.rent + modal.p.stats.income.salary + modal.p.stats.income.other}</div>
-                                                    <div className="mt-2 space-y-1">
-                                                        <div className="flex justify-between text-xs text-green-800/60"><span>收租</span><span>{modal.p.stats.income.rent}</span></div>
-                                                        <div className="flex justify-between text-xs text-green-800/60"><span>工资</span><span>{modal.p.stats.income.salary}</span></div>
-                                                    </div>
                                                 </div>
                                                 <div className="bg-red-50 p-3 rounded-xl border border-red-100">
-                                                    <div className="text-xs font-bold text-red-600 uppercase mb-2 opacity-70">总支出</div>
+                                                    <div className="text-xs font-bold text-red-600 uppercase mb-2 opacity-70">花了</div>
                                                     <div className="text-xl font-black text-red-700">${modal.p.stats.expense.buy + modal.p.stats.expense.rent + modal.p.stats.expense.tax}</div>
-                                                    <div className="mt-2 space-y-1">
-                                                        <div className="flex justify-between text-xs text-red-800/60"><span>购房</span><span>{modal.p.stats.expense.buy}</span></div>
-                                                        <div className="flex justify-between text-xs text-red-800/60"><span>交租</span><span>{modal.p.stats.expense.rent}</span></div>
-                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center"><span className="font-bold text-slate-600">当前现金流</span><span className="text-2xl font-mono font-black text-slate-800">${modal.p.money}</span></div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center"><span className="font-bold text-slate-600">现在有</span><span className="text-2xl font-mono font-black text-slate-800">${modal.p.money}</span></div>
                                         </div>
                                     )}
                                     {assetTab === 'props' && (
                                         <div className="overflow-y-auto flex-1 space-y-2 custom-scroll">
-                                            {tiles.filter(t=>t.owner===modal.p.id).length === 0 ? <div className="flex flex-col items-center justify-center h-40 text-slate-400"><div className="text-4xl mb-2">🕸️</div><div>暂无资产</div></div> :
+                                            {tiles.filter(t=>t.owner===modal.p.id).length === 0 ? <div className="flex flex-col items-center justify-center h-40 text-slate-400"><div className="text-4xl mb-2">🏠</div><div>还没有买房子哦</div></div> :
                                                 tiles.filter(t=>t.owner===modal.p.id).map(t=>(
                                                     <div key={t.id} className="flex justify-between items-center p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-2 h-8 rounded-full" style={{backgroundColor: `var(--color-${t.color}-500)`}}></div>
                                                             <div>
-                                                                <div className="font-bold text-slate-800 flex items-center gap-1"><span className="text-lg">{t.icon}</span> {t.name} {t.level>0 && <span className="bg-yellow-100 text-yellow-600 text-[10px] px-1 rounded border border-yellow-200">{t.level===2?'MAX':'LV2'}</span>}</div>
+                                                                <div className="font-bold text-slate-800 flex items-center gap-1"><span className="text-lg">{t.icon}</span> {t.name} {t.level>0 && <span className="bg-yellow-100 text-yellow-600 text-[10px] px-1 rounded border border-yellow-200">{t.level===2?'👑':'⭐'}</span>}</div>
                                                             </div>
                                                         </div>
-                                                        <div className="text-right"><div className="text-xs text-slate-400">当前租金</div><div className="font-mono font-bold text-blue-600">${t.rent * (t.level==0?1:t.level==1?2:4)}</div></div>
+                                                        <div className="text-right"><div className="text-xs text-slate-400">房租</div><div className="font-mono font-bold text-blue-600">${t.rent * (t.level==0?1:t.level==1?2:3)}</div></div>
                                                     </div>
                                                 ))
                                             }
