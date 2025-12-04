@@ -45,7 +45,7 @@
         }
 
         @media (max-width: 1023px) {
-            .board-section { flex: 1; width: 100%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; padding-bottom: 140px; } /* 增加底部留白给更大的HUD */
+            .board-section { flex: 1; width: 100%; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; padding-bottom: 140px; }
             .controls-section { display: none; }
             .mobile-hud { display: flex !important; }
             .desktop-hud { display: none !important; }
@@ -100,6 +100,10 @@
         .float-text { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-weight: 900; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); animation: floatUp 2s forwards; pointer-events: none; z-index: 100; white-space: nowrap; }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50px) scale(1.2); } }
 
+        /* 地图上的随机金币 */
+        .map-coin { position: absolute; top: 2px; left: 2px; font-size: 12px; animation: spin 2s infinite; z-index: 10; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
+        @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+
         .mobile-hud { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; z-index: 60; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); }
         .desktop-hud { height: 100%; background: var(--panel-bg); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 24px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.05); }
 
@@ -108,9 +112,10 @@
         .dice-rolling { animation: dice-wobble 0.4s ease-in-out infinite; }
         @keyframes dice-wobble { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-15deg) scale(1.1); } 75% { transform: rotate(15deg) scale(1.1); } }
 
-        .player-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+        .player-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; position: relative; }
         .player-card.active { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         .player-card.bankrupt { opacity: 0.4; filter: grayscale(1); }
+        .skill-badge { position: absolute; top: -5px; right: -5px; background: #eab308; color: #000; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
 
         .pulse-text { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.95); } }
@@ -127,9 +132,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 音效系统 ---
+        // --- 音效 ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         const playTone = (freq, type, duration, vol = 0.1) => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
@@ -143,37 +147,16 @@
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
         };
-
         const playSound = (effect, enabled) => {
             if (!enabled) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume(); // 双重保险
-            
             switch(effect) {
-                case 'dice': 
-                    // 模拟骰子滚动的哒哒声
-                    for(let i=0; i<6; i++) {
-                        setTimeout(() => playTone(300 + Math.random()*200, 'square', 0.05, 0.03), i*50);
-                    }
-                    break;
-                case 'step': 
-                    playTone(400, 'sine', 0.08, 0.05); 
-                    break;
-                case 'coin': 
-                    playTone(1000, 'sine', 0.1, 0.1); 
-                    setTimeout(() => playTone(1500, 'sine', 0.2, 0.1), 100); 
-                    break;
-                case 'pay': 
-                    playTone(200, 'sawtooth', 0.2, 0.05); 
-                    setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); 
-                    break;
-                case 'upgrade': 
-                    playTone(500, 'square', 0.1, 0.05); 
-                    setTimeout(() => playTone(750, 'square', 0.1, 0.05), 100); 
-                    setTimeout(() => playTone(1000, 'square', 0.2, 0.05), 200);
-                    break;
-                case 'turn': 
-                    playTone(600, 'sine', 0.3, 0.05); 
-                    break;
+                case 'dice': for(let i=0; i<6; i++) setTimeout(() => playTone(300+Math.random()*200, 'square', 0.05, 0.03), i*50); break;
+                case 'step': playTone(400, 'sine', 0.08, 0.05); break;
+                case 'coin': playTone(1000, 'sine', 0.1, 0.1); setTimeout(() => playTone(1500, 'sine', 0.2, 0.1), 100); break;
+                case 'pay': playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); break;
+                case 'upgrade': playTone(500, 'square', 0.1, 0.05); setTimeout(() => playTone(750, 'square', 0.1, 0.05), 100); setTimeout(() => playTone(1000, 'square', 0.2, 0.05), 200); break;
+                case 'turn': playTone(600, 'sine', 0.3, 0.05); break;
+                case 'win': for(let i=0; i<3; i++) setTimeout(() => { playTone(500, 'square', 0.1, 0.1); setTimeout(()=>playTone(800, 'square', 0.2, 0.1), 100); }, i*300); break;
             }
         };
 
@@ -182,7 +165,7 @@
             star: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>,
             heart: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>,
             crown: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11h-14zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
-            robot: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0 2.5-2.5z"/></svg>,
+            robot: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5z"/></svg>,
             car: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>,
             ship: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0 1.26.65 2.62.99 4 .99h2v-2h-2zM3.95 19H4c1.6 0 3.02-.88 4-2 .98 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08-.26.06-.54-.06-.78s-.34-.42-.6-.5L20 10.62V6c0-1.1-.9-2-2-2h-3V1H9v3H6c-1.1 0-2 .9-2 2v4.62l-1.29.42c-.26.08-.48.26-.6.5s-.15.52-.06.78L3.95 19zM6 6h12v3.97L12 8 6 9.97V6z"/></svg>,
             smile: <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>,
@@ -190,14 +173,14 @@
         };
 
         const CHARACTER_ROSTER = [
-            { id: 'huang', name: "黄小越", color: "#eab308", bgLight: "#fef9c3", icon: ICONS.star, desc: "口算小天才" },
-            { id: 'pinky', name: "粉红豹", color: "#ec4899", bgLight: "#fce7f3", icon: ICONS.heart, desc: "可爱的朋友" },
-            { id: 'tech', name: "科技侠", color: "#3b82f6", bgLight: "#dbeafe", icon: ICONS.robot, desc: "聪明机器人" },
-            { id: 'king', name: "多金王", color: "#f59e0b", bgLight: "#fef3c7", icon: ICONS.crown, desc: "大富翁" },
-            { id: 'racer', name: "极速客", color: "#ef4444", bgLight: "#fee2e2", icon: ICONS.car, desc: "跑得快" },
-            { id: 'sailor', name: "航海家", color: "#06b6d4", bgLight: "#cffafe", icon: ICONS.ship, desc: "爱冒险" },
-            { id: 'smile', name: "乐天派", color: "#8b5cf6", bgLight: "#ede9fe", icon: ICONS.smile, desc: "天天开心" },
-            { id: 'cat', name: "喵星人", color: "#f97316", bgLight: "#ffedd5", icon: ICONS.paw, desc: "喵喵喵" },
+            { id: 'huang', name: "黄小越", color: "#eab308", bgLight: "#fef9c3", icon: ICONS.star, desc: "经过起点工资+$2", ability: "start_bonus" },
+            { id: 'pinky', name: "粉红豹", color: "#ec4899", bgLight: "#fce7f3", icon: ICONS.heart, desc: "收租时多收$1", ability: "rent_bonus" },
+            { id: 'tech', name: "科技侠", color: "#3b82f6", bgLight: "#dbeafe", icon: ICONS.robot, desc: "升级房子少花$2", ability: "upgrade_discount" },
+            { id: 'king', name: "多金王", color: "#f59e0b", bgLight: "#fef3c7", icon: ICONS.crown, desc: "初始资金+$5", ability: "start_rich" },
+            { id: 'racer', name: "极速客", color: "#ef4444", bgLight: "#fee2e2", icon: ICONS.car, desc: "掷1点可重掷", ability: "reroll_1" },
+            { id: 'sailor', name: "航海家", color: "#06b6d4", bgLight: "#cffafe", icon: ICONS.ship, desc: "机会总是好运", ability: "lucky_chance" },
+            { id: 'smile', name: "乐天派", color: "#8b5cf6", bgLight: "#ede9fe", icon: ICONS.smile, desc: "付房租少付$1", ability: "pay_less" },
+            { id: 'cat', name: "喵星人", color: "#f97316", bgLight: "#ffedd5", icon: ICONS.paw, desc: "30%几率免租", ability: "dodge_rent" },
         ];
 
         const BUSINESS_DATA = [
@@ -223,6 +206,7 @@
             const [logs, setLogs] = useState(["开始挑战吧！"]);
             const [floatTexts, setFloatTexts] = useState([]);
             const [assetTab, setAssetTab] = useState('stats');
+            const [mapCoins, setMapCoins] = useState([]);
 
             const play = (eff) => playSound(eff, settings.sound);
 
@@ -249,18 +233,29 @@
                 setGridConfig({ cols, rows });
                 setTiles(newTiles);
                 
+                // 随机撒金币 (每8格一个)
+                const coins = [];
+                for(let i=3; i<total; i+=8) {
+                    if (Math.random() > 0.3) coins.push({ id: i, val: 2 });
+                }
+                setMapCoins(coins);
+                
                 const initP = Array.from({ length: settings.playerCount }, (_, i) => {
                     const charData = CHARACTER_ROSTER.find(c => c.id === (selectedChars[i] || CHARACTER_ROSTER[i].id));
+                    let startMoney = 50;
+                    if (charData.ability === 'start_rich') startMoney += 5; // 多金王能力
+
                     return {
                         id: i, name: charData.name, color: charData.color, bgLight: charData.bgLight, icon: charData.icon,
-                        money: 50, // 初始 $50，方便凑100
+                        money: startMoney, 
                         pos: 0, inJail: false, isBankrupt: false,
+                        ability: charData.ability,
                         stats: { income: { rent: 0, salary: 0, other: 0 }, expense: { buy: 0, rent: 0, tax: 0 } }
                     };
                 });
                 setPlayers(initP);
                 setTurn(0);
-                setLogs([`每人 $50，目标：赚到 $100！`]);
+                setLogs([`每人$50，谁先赚到$100获胜！`]);
                 setStage('playing');
                 play('turn');
             };
@@ -273,18 +268,17 @@
                     if (i === 0) { arr.push({ id: i, type: 'start', name: '起点', icon: '🏁', color: 'slate' }); continue; }
                     const rand = Math.random();
                     
-                    // 数学优化版数值：地价 10-20，租金 2-8
-                    let tilePrice = 10 + Math.floor((i / total) * 10); // 10, 12, 15... 20
-                    // 偶数化，方便减半
+                    // 数学优化版：地价10-20
+                    let tilePrice = 10 + Math.floor((i / total) * 10);
                     if (tilePrice % 2 !== 0) tilePrice += 1;
                     
                     let rentPrice = Math.max(2, Math.floor(tilePrice * 0.2)); 
-                    if (rentPrice % 2 !== 0) rentPrice += 1; // 偶数化
+                    if (rentPrice % 2 !== 0) rentPrice += 1;
 
                     if (i % 6 === 0) {
-                        if (rand > 0.7) arr.push({ id: i, type: 'chance', name: '机会', icon: '❓', color: 'amber' }); // +/- 5 or 10
-                        else if (rand > 0.4) arr.push({ id: i, type: 'tax', name: '税局', icon: '💸', color: 'stone', amount: 5 }); // 整数 5
-                        else arr.push({ id: i, type: 'hospital', name: '医院', icon: '🏥', color: 'red', amount: 5 }); // 整数 5
+                        if (rand > 0.7) arr.push({ id: i, type: 'chance', name: '机会', icon: '❓', color: 'amber' });
+                        else if (rand > 0.4) arr.push({ id: i, type: 'tax', name: '税局', icon: '💸', color: 'stone', amount: 5 });
+                        else arr.push({ id: i, type: 'hospital', name: '医院', icon: '🏥', color: 'red', amount: 5 });
                         continue;
                     }
                     if (i === Math.floor(total * 0.25)) { arr.push({ id: i, type: 'jail', name: '探监', icon: '⛓️', color: 'slate' }); continue; }
@@ -301,13 +295,18 @@
 
             const rollDice = async () => {
                 if (isRolling || movingPlayerId !== null || modal) return;
-                
-                // 确保音频上下文已激活
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 
                 setIsRolling(true); play('dice');
                 for(let i=0; i<8; i++) { await new Promise(r => setTimeout(r, 60)); setDice(Math.floor(Math.random()*6)+1); }
-                const val = Math.floor(Math.random()*6)+1;
+                
+                let val = Math.floor(Math.random()*6)+1;
+                // 极速客能力
+                if (players[turn].ability === 'reroll_1' && val === 1) {
+                    setLogs(p=>["极速客触发：重掷！", ...p]);
+                    val = Math.floor(Math.random()*6)+1;
+                }
+
                 setDice(val); setIsRolling(false);
                 handleMove(turn, val);
             };
@@ -324,10 +323,21 @@
                     curPos = (curPos + 1) % tiles.length;
                     updatePlayer(pId, { pos: curPos });
                     play('step');
+                    
+                    // 捡金币
+                    const coinIdx = mapCoins.findIndex(c => c.id === curPos);
+                    if (coinIdx > -1) {
+                        transfer(null, pId, mapCoins[coinIdx].val, 'other');
+                        setMapCoins(prev => prev.filter((_, idx) => idx !== coinIdx));
+                        setLogs(p=>["捡到金币 +$2", ...p]);
+                    }
+
                     await new Promise(r => setTimeout(r, 200));
                 }
                 if (player.pos + steps >= tiles.length && !player.inJail) {
-                    setLogs(p=>["经过起点 +$10", ...p]); transfer(null, pId, 10, 'salary'); // 工资 +10
+                    let salary = 10;
+                    if (player.ability === 'start_bonus') salary += 2; // 黄小越能力
+                    setLogs(p=>[`经过起点 +$${salary}`, ...p]); transfer(null, pId, salary, 'salary');
                 }
                 setMovingPlayerId(null);
                 setTimeout(() => resolveTile(curPos, pId), 300);
@@ -341,18 +351,36 @@
                         if (player.money >= tile.price) { setModal({ type: 'buy', tile }); play('turn'); }
                         else { setLogs(p=>["钱不够买", ...p]); nextTurn(); }
                     } else if (tile.owner === pId) {
-                        if (tile.level < 2) { setModal({ type: 'upgrade', tile, cost: Math.ceil(tile.price/2) }); play('turn'); }
+                        let cost = Math.ceil(tile.price/2);
+                        if (player.ability === 'upgrade_discount') cost = Math.max(1, cost - 2); // 科技侠能力
+                        if (tile.level < 2) { setModal({ type: 'upgrade', tile, cost }); play('turn'); }
                         else { setLogs(p=>["已满级", ...p]); nextTurn(); }
                     } else {
                         const owner = players[tile.owner];
                         if (!owner.isBankrupt) {
                             const multiplier = tile.level === 0 ? 1 : (tile.level === 1 ? 2 : 3);
-                            setModal({ type: 'rent', tile, owner, amount: tile.rent * multiplier });
-                            play('pay');
+                            let rent = tile.rent * multiplier;
+                            
+                            // 技能结算
+                            if (owner.ability === 'rent_bonus') rent += 1; // 粉红豹加租
+                            if (player.ability === 'pay_less') rent = Math.max(0, rent - 1); // 乐天派减租
+                            if (player.ability === 'dodge_rent' && Math.random() < 0.3) {
+                                setLogs(p=>["萌混过关，免租金！", ...p]); rent = 0; // 喵星人
+                            }
+
+                            if (rent > 0) {
+                                setModal({ type: 'rent', tile, owner, amount: rent });
+                                play('pay');
+                            } else {
+                                nextTurn();
+                            }
                         } else { setLogs(p=>["免租金", ...p]); nextTurn(); }
                     }
                 }
-                else if (tile.type === 'chance') { setModal({ type: 'event', ...(Math.random()>0.5 ? {t:"捡到钱 +$5",v:5,g:true} : {t:"丢了钱 -$5",v:-5,g:false}) }); }
+                else if (tile.type === 'chance') { 
+                    const isLucky = player.ability === 'lucky_chance' || Math.random() > 0.5;
+                    setModal({ type: 'event', ...(isLucky ? {t:"捡到钱 +$5",v:5,g:true} : {t:"丢了钱 -$5",v:-5,g:false}) }); 
+                }
                 else if (tile.type === 'casino') setModal({ type: 'casino' });
                 else if (tile.type === 'hospital') { setLogs(p=>["看医生 -$5", ...p]); transfer(pId, null, 5, 'tax'); setTimeout(nextTurn, 800); }
                 else if (tile.type === 'tax') { setLogs(p=>[`交税 $${tile.amount}`, ...p]); transfer(pId, null, tile.amount, 'tax'); setTimeout(nextTurn, 800); }
@@ -382,7 +410,7 @@
                             let recovered = 0, sold = [];
                             for (let asset of myAssets) {
                                 if (newP.money + recovered >= val) break;
-                                const sell = Math.floor(asset.price / 2); // 半价卖
+                                const sell = Math.floor(asset.price / 2);
                                 recovered += sell; sold.push(asset.id);
                                 setLogs(prev => [`💸 卖掉${asset.name} (+$${sell})`, ...prev]);
                             }
@@ -403,6 +431,19 @@
                 }));
             };
 
+            const checkWin = (currentPlayers) => {
+                // 胜利条件：资产 > 100
+                const winner = currentPlayers.find(p => {
+                    const assets = p.money + tiles.filter(t=>t.owner===p.id).reduce((a,b)=>a+b.price, 0);
+                    return assets >= 100;
+                });
+                if (winner) {
+                    setStage('gameover');
+                    return true;
+                }
+                return false;
+            };
+
             const nextTurn = () => {
                 setPlayers(curr => {
                     const nextP = curr.map(p => {
@@ -413,12 +454,16 @@
                         }
                         return p;
                     });
+                    
+                    if (checkWin(nextP)) return nextP;
+
                     const alive = nextP.filter(p => !p.isBankrupt);
                     if (alive.length === 1) { setStage('gameover'); return nextP; }
+                    
                     let next = (turn + 1) % nextP.length;
                     while (nextP[next].isBankrupt) next = (next + 1) % nextP.length;
                     setTurn(next);
-                    play('turn'); // 提示下一位玩家
+                    play('turn');
                     return nextP;
                 });
             };
@@ -450,7 +495,7 @@
                 return null;
             };
 
-            // --- UI 渲染 ---
+            // --- UI ---
             const Controls = () => (
                 <>
                     <div className="bg-slate-800/50 rounded-xl p-4 flex-1 overflow-hidden flex flex-col border border-slate-700">
@@ -462,18 +507,33 @@
                             {logs.map((l, i) => <div key={i} className={`text-xs ${i===0?'text-white font-bold':'text-slate-400'}`}>{l}</div>)}
                         </div>
                     </div>
-                    {/* 明确的提示谁投骰子 */}
-                    <div className="text-center font-bold text-lg text-yellow-400 pulse-text">👇 轮到 {currentPlayer.name} 👇</div>
+                    {/* 提示栏 */}
+                    <div className="text-center bg-slate-800/80 p-2 rounded-lg border border-slate-600 animate-pulse">
+                        <div className="text-xs text-slate-400 mb-1">现在轮到</div>
+                        <div className="flex items-center justify-center gap-2 font-bold text-lg" style={{color: currentPlayer.color}}>
+                            {currentPlayer.name} <span className="text-2xl">🎲</span> 请投骰子
+                        </div>
+                    </div>
                     <div className="flex items-center justify-center gap-4 pb-4">
                         <button onClick={rollDice} disabled={isRolling || modal} className={`dice-btn w-24 h-24 text-4xl shadow-xl ${isRolling ? 'dice-rolling' : ''}`}>{dice}</button>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
-                        {players.map(p => (
-                            <div key={p.id} onClick={() => {setModal({ type: 'asset', p }); setAssetTab('stats');}} className={`player-card ${turn === p.id ? 'active' : ''} ${p.isBankrupt ? 'bankrupt' : ''}`}>
-                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{backgroundColor: p.color}}><div style={{width:'20px', height:'20px'}}>{p.icon}</div></div>
-                                <div className="flex-1 min-w-0"><div className="text-xs font-bold text-slate-300 flex justify-between"><span>{p.name}</span>{p.inJail && <span className="text-red-500">狱</span>}</div><div className="text-sm font-mono font-bold text-green-400">${p.money}</div></div>
-                            </div>
-                        ))}
+                        {players.map(p => {
+                            const assets = p.money + (tiles.length ? tiles.filter(t=>t.owner===p.id).reduce((a,b)=>a+b.price,0) : 0);
+                            const progress = Math.min(100, (assets/100)*100);
+                            return (
+                                <div key={p.id} onClick={() => {setModal({ type: 'asset', p }); setAssetTab('stats');}} className={`player-card ${turn === p.id ? 'active' : ''} ${p.isBankrupt ? 'bankrupt' : ''}`}>
+                                    <div className="skill-badge">{CHARACTER_ROSTER.find(c=>c.name===p.name)?.desc}</div>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{backgroundColor: p.color}}><div style={{width:'20px', height:'20px'}}>{p.icon}</div></div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-bold text-slate-300 flex justify-between"><span>{p.name}</span>{p.inJail && <span className="text-red-500">狱</span>}</div>
+                                        <div className="text-sm font-mono font-bold text-green-400">${p.money} <span className="text-[10px] text-slate-500">/ 总${assets}</span></div>
+                                        {/* 进度条 */}
+                                        <div className="w-full h-1 bg-slate-700 rounded-full mt-1 overflow-hidden"><div className="h-full transition-all duration-500" style={{width: `${progress}%`, backgroundColor: p.color}}></div></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </>
             );
@@ -509,6 +569,7 @@
                                         })}
                                     </div>
                                     <div className="mt-3 text-center h-5 text-sm font-bold text-white">{selectedChars[idx] ? CHARACTER_ROSTER.find(c=>c.id===selectedChars[idx]).name : <span className="text-slate-500">?</span>}</div>
+                                    <div className="text-xs text-center text-slate-400 mt-1">{selectedChars[idx] ? CHARACTER_ROSTER.find(c=>c.id===selectedChars[idx]).desc : ""}</div>
                                 </div>
                             ))}
                         </div>
@@ -517,7 +578,14 @@
                 </div>
             );
 
-            if (stage === 'gameover') return (<div className="flex h-full items-center justify-center bg-slate-900 text-white relative"><div className="text-center z-10"><div className="text-8xl mb-4 animate-bounce">🏆</div><h2 className="text-2xl font-bold mb-2 text-slate-400">大赢家</h2><div className="text-6xl font-black mb-12" style={{color: players.find(p=>!p.isBankrupt).color}}>{players.find(p=>!p.isBankrupt).name}</div><button onClick={()=>window.location.reload()} className="px-10 py-4 bg-slate-800 border border-slate-600 rounded-full font-bold hover:bg-slate-700 transition-colors">再玩一次</button></div></div>);
+            if (stage === 'gameover') {
+                const winner = players.find(p => {
+                    const assets = p.money + tiles.filter(t=>t.owner===p.id).reduce((a,b)=>a+b.price, 0);
+                    return assets >= 100;
+                }) || players.find(p=>!p.isBankrupt);
+                
+                return (<div className="flex h-full items-center justify-center bg-slate-900 text-white relative"><div className="text-center z-10"><div className="text-8xl mb-4 animate-bounce">🏆</div><h2 className="text-2xl font-bold mb-2 text-slate-400">资产达到$100！</h2><div className="text-6xl font-black mb-12" style={{color: winner.color}}>{winner.name}</div><button onClick={()=>window.location.reload()} className="px-10 py-4 bg-slate-800 border border-slate-600 rounded-full font-bold hover:bg-slate-700 transition-colors">再玩一次</button></div></div>);
+            }
 
             const currentPlayer = players[turn];
 
@@ -529,6 +597,7 @@
                                 const pos = getSnakePos(i);
                                 const owner = t.owner !== null ? players[t.owner] : null;
                                 const dir = getArrowDir(i);
+                                const coin = mapCoins.find(c => c.id === i);
                                 return (
                                     <div key={i} className={`tile ${owner ? 'owned' : ''}`} style={{ gridColumn: pos.col, gridRow: pos.row, backgroundColor: owner ? owner.bgLight : (t.type !== 'prop' ? '#f1f5f9' : '#ffffff'), borderColor: owner ? owner.color : 'transparent', borderWidth: owner ? '2px' : '0' }}>
                                         <div className={`street-bar ${t.color === 'slate' ? 'bg-slate-400' : `bg-${t.color}-400`}`} style={{backgroundColor: t.color === 'slate' ? null : null }}></div>
@@ -538,6 +607,7 @@
                                         {dir === 'down' && <div className="path-arrow arrow-down">⬇</div>}
                                         {i === tiles.length - 1 && <div className="return-start">↺ 回起点</div>}
                                         {t.level > 0 && <div className="level-stars">{[...Array(t.level)].map((_,k)=><span key={k}>{t.level===2?'👑':'⭐'}</span>)}</div>}
+                                        {coin && <div className="map-coin">💰</div>}
                                         <div className="tile-content">
                                             <div className="tile-icon-div">{t.icon}</div>
                                             <div className="tile-name-div">{t.name}</div>
@@ -575,19 +645,28 @@
 
                     <div className="mobile-hud md:hidden">
                         {/* 移动端提示 */}
-                        <div className="text-center font-bold text-lg text-yellow-400 pulse-text mb-2">👇 轮到 {currentPlayer.name} 👇</div>
+                        <div className="text-center bg-slate-800/80 p-2 rounded-lg border border-slate-600 mb-2">
+                            <div className="flex items-center justify-center gap-2 font-bold text-lg" style={{color: currentPlayer.color}}>
+                                {currentPlayer.name} <span className="text-2xl animate-bounce">🎲</span> 请投骰子
+                            </div>
+                        </div>
                         
                         <div className="flex justify-between items-end">
                             <div className="flex-1 mr-4 overflow-hidden" onClick={()=>setSettings(s=>({...s, sound: !s.sound}))}><div className="text-xs text-slate-400 mb-1">消息 {settings.sound?'🔊':'🔇'}</div><div className="text-sm text-yellow-400 font-bold truncate">{logs[0]}</div></div>
                             <button onClick={rollDice} disabled={isRolling || modal} className={`dice-btn w-16 h-16 shrink-0 ${isRolling ? 'dice-rolling' : ''}`}>{dice}</button>
                         </div>
                         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-slate-700">
-                            {players.map(p => (
-                                <div key={p.id} onClick={() => {setModal({ type: 'asset', p }); setAssetTab('stats');}} className={`shrink-0 w-20 bg-slate-800 rounded p-2 border border-slate-700 flex flex-col items-center gap-1 ${p.isBankrupt?'opacity-30':''}`}>
-                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs" style={{backgroundColor: p.color}}><div style={{width:'12px', height:'12px'}}>{p.icon}</div></div>
-                                    <div className="text-xs font-mono text-green-400">${p.money}</div>
-                                </div>
-                            ))}
+                            {players.map(p => {
+                                const assets = p.money + (tiles.length ? tiles.filter(t=>t.owner===p.id).reduce((a,b)=>a+b.price,0) : 0);
+                                const progress = Math.min(100, (assets/100)*100);
+                                return (
+                                    <div key={p.id} onClick={() => {setModal({ type: 'asset', p }); setAssetTab('stats');}} className={`shrink-0 w-24 bg-slate-800 rounded p-2 border border-slate-700 flex flex-col items-center gap-1 relative ${p.isBankrupt?'opacity-30':''} ${turn===p.id ? 'ring-2 ring-yellow-400' : ''}`}>
+                                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs" style={{backgroundColor: p.color}}><div style={{width:'12px', height:'12px'}}>{p.icon}</div></div>
+                                        <div className="text-xs font-mono text-green-400 font-bold">${p.money}</div>
+                                        <div className="w-full h-1 bg-slate-600 rounded-full mt-1"><div className="h-full" style={{width: `${progress}%`, backgroundColor: p.color}}></div></div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -638,7 +717,7 @@
                                         <>
                                             <div className="text-5xl mb-3">🎰</div>
                                             <h3 className="text-2xl font-bold mb-2">猜大小</h3>
-                                            <p className="text-slate-500 mb-6">只要 $3，赢了赚翻！</p>
+                                            <p className="text-slate-500 mb-6">只要 $5，赢了赚翻！</p>
                                             <div className="flex gap-3">
                                                 <button onClick={()=>{setModal(null);nextTurn()}} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">不玩</button>
                                                 <button onClick={actions.casino} className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow">玩一把</button>
